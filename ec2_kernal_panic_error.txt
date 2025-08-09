@@ -1,0 +1,60 @@
+EC2 INSTANCE Kernel panic
+
+
+EC2- Server failing in status check even after restart. 
+Checked the Actoins > Monitor and troucbleshoot > get instance screenshot > Error: 
+kernel panic error
+
+CAUSE: This usually happens when some change have been made at the kernel (OS) level, wich are not compatible with the instance , OR Kernel version may have upgraded
+
+SOLUTION: For  Kernel version upgrade : 
+Launch a new server from the AMI of prev server and compare the Kernal version (AMI which is of older time will have kernel version older and the faulty server will have higher version)
+       2.	Now find a ec2 server which is in same AZ as the faulty server . 
+       3.  Take the snapshot of the volume of faulty server for backup 
+4.	Take the AMI of server on which testing is to done
+5. Now stop the faulty server , Detach its root volume , OS and kernel level data will be in that EBS volume only .
+6. Now attach this volume to the other(New) ec2 instance While attaching use the Device name as something other than “a”.”a”  is used for root volume Login to that server . 
+RUN : 
+lsblk -f
+mount /dev/nvme1n1p1 /mnt
+for i in dev proc sys run; do mount -o bind /$i /mnt/$i; done; chroot /mnt	
+Or 
+for i in dev proc sys run; do mount -o bind /$i /mnt/$i; done;
+chroot /mnt
+If getting error of “segmentation fault”
+Then run 
+xfs_repair -n /dev/nvme1n1p1
+xfs_repair /dev/nvme1n1p1
+Or 
+umount -l /mnt
+xfs_repair -L /dev/nvme1n1p1
+mount /dev/nvme1n1p1 /mnt
+for i in dev proc sys run; do mount -o bind /$i /mnt/$i; done
+chroot /mnt
+Do the necessary patching and use this guide : https://repost.aws/knowledge-center/ec2-linux-kernel-panic-unable-mount 
+
+7. If it turns okay , then attach it back to faulty server , server will be up
+
+OR 
+If above command did not run 
+
+Then if we have the AMI of faulty server ;
+LAunch ec2 instance which is already done above
+Now the root Volme of this server will be healaty , detach it from there and attach it to faulty server 
+Commands: [root ~]$ mount -o nouuid  /dev/xvdf1 /mnt
+Nouuid is user because both the volumes will be having same UUID , as they have same AMI
+
+In case backup data is required , now attach the faulty volume as /dev/xvdb 
+And Copy all the data you need , you can check the logs also to verify what actually happened to original server kernel
+
+
+
+
+
+
+
+
+
+REFER : https://repost.aws/knowledge-center/ec2-linux-kernel-panic-unable-mount 
+
+

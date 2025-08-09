@@ -1,0 +1,7 @@
+Large size file:
+
+sudo find / -type f -size +100M  | xargs du -sh | sort -rh | head -5        #find all big size file above 100mb
+
+Truncate: 
+for i in `find /usr01/app/product/logs/web/eRetailWeb.log* -size +1M`; do truncate -s 0 $i;done
+

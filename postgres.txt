@@ -1,0 +1,22 @@
+Login:
+psql -h preprod-cd-retail-pos-rds-db-v14.cnqowxckdreu.ap-south-1.rds.amazonaws.com -Uroot postgres
+Then password
+
+\l (list databases)
+\c  <dbname>   (change to db)
+\dt    (show tables)
+select * from beauty_fb limit 3;   (show content of a database)
+\dn (show schemas)
+\du (list users)
+
+https://quickref.me/postgres.html
+
+NOTE : To change and and give grants related to database , you must be into that database first
+
+
+
+Dump command : 
+Format: (Run this inside postgres database)
+\copy (SELECT id, name, email FROM users WHERE status = 'active') TO '/tmp/active_users.csv' WITH (FORMAT csv, HEADER true);
+
+

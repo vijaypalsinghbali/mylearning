@@ -1,0 +1,53 @@
+
+
+TO increase the heap memory of a java service 
+
+
+Jps
+jps -l
+jps -v
+-Xms2000M -Xmx5000M
+
+
+Cat /etc/systemd/system/tomcat.service
+Parameters to change : 
+JAVA_OPTS=-Xms2000M -Xmx5000M
+Then restart the tomcat
+Systemctl reload/restart tomcat or service tomcat restart
+
+
+
+For Java virtual machine : JVM: 
+Command to see the heap memory allocation 
+Jps 
+Jps -l
+Jps -v
+-xms value = min alloted value for booting time
+-xmx value = max allotted value for booting process
+
+You can pass parameters to the JVM to set the minimum and maximum heap sizes; the default maximum heap size is 256 MB. To give more capacity to a message flow that is going to process large messages, reduce the minimum JVM heap size to allow the main memory heap to occupy more address space.
+Increase the maximum heap size only if you use Java intensively with, for example, user-defined nodes.
+Use caution when you set the maximum heap size, because the Java Runtime Environment takes the values for its initial, maximum, and current heap sizes to calculate how frequently it drives garbage collection. A large maximum heap size drives garbage collection less frequently. If garbage collection is driven less frequently, the heap size associated with the integration server continues to grow.
+Use the information on JVM parameter values on the mqsichangeproperties command to set the heap size that you require.
+In a server tomcat is the webserver used for java servers . When a request hits the server it is first attended by tomcat and then tomcat redirects it to the service .
+
+Command used:
+systemctl stop tomcat
+cd /etc/systemd/system
+vim tomcat.service
+Edit : 
+Environment="JAVA_OPTS=-Xms1024M -Xmx6000M -DXSSFilter -DlogLevel=INFOPLUS -Dlog4j2.formatMsgNoLookups=true"
+
+
+Environment="CATALINA_OPTS=-Xms1024M -Xmx6000M -server -XX:+UseParallelGC -javaagent:/opt/tomcat/newrelic/newrelic.jar -Dnewrelic.config.file=/opt/tomcat/newrelic/newrelic.yml"
+	 
+Edit the -Xms and -Xmx as asked by dev 
+Save it
+
+
+Run : systemctl daemon-reload
+Run : systemctl stop tomcat
+
+
+DONE
+

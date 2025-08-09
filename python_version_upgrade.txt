@@ -1,0 +1,71 @@
+
+
+HOW TO UPDATE PYTHON VERSION:
+
+
+apt install software-properties-common
+add-apt-repository ppa:deadsnakes/ppa
+apt install python3.12
+Done now remove old versions
+cd /etc/
+ls -ltrh|grep python
+ls /usr/bin/python*
+ls -ltrh /usr/bin/python*
+apt remove python3.8
+apt autoremove
+rm /usr/bin/python3.8
+sudo ln -s /usr/local/bin/python3.12 /usr/bin/python3
+ln -s /usr/bin/python3.12 /usr/bin/python
+
+Path to base image for a Dockerfile:
+
+
+
+
+Use this dockerfile to create image (explore-feed)
+
+FROM ubuntu:20.04
+RUN apt-get update && apt-get install -y software-properties-common
+RUN apt-get update --fix-missing
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get install -y  vim nginx libpq-dev libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev libffi-dev libcurl4-openssl-dev libapache2-mod-wsgi-py3 curl build-essential python3.12 python3.12-dev python3-pip python3.12-venv git libmysqlclient-dev libcurl4-openssl-dev libssl-dev net-tools wget mlocate
+
+# update pip
+RUN apt-get update
+RUN apt-get install -y python3.12-distutils
+RUN python3.12 -m ensurepip --upgrade
+RUN python3.12 -m pip install --upgrade pip setuptools wheel cython
+RUN ln -svf /usr/bin/python3.12 /usr/bin/python
+RUN pip3 install wheel requests uwsgi six
+RUN pip3 install circus==0.16.1
+RUN apt-get install -y pkg-config libgirepository1.0-dev libglib2.0 libcairo2-dev python3-cairo-dev gfortran libopenblas-dev liblapack-dev
+# RUN pip3 install scipy==1.4.1
+RUN pip3 install pandas --upgrade
+COPY ep /usr/bin/
+COPY nginx.conf /etc/nginx/
+
+
+—-
+
+
+To remove the old symlink and attach new: 
+
+ ls -ltrh /usr/bin/python*
+  ln -s /usr/bin/python3.12 /usr/bin/python3
+apt-get remove python3.8
+ln -s /usr/bin/python3.12 /usr/bin/python3
+apt-get purge python3.8
+rm -rf /usr/bin/python3.8
+rm /usr/bin/python3
+ls -ltrh /usr/bin/python*
+ln -s /usr/bin/python3.12 /usr/bin/python3
+ls -ltrh /usr/bin/python*
+—-
+
+Install python3.8
+pip3 install virtualenv
+virtualenv venv
+python3 -m venv venv
+pip3 install -r requirements.txt
+source venv/bin/activate
+

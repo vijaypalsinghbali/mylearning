@@ -1,0 +1,102 @@
+Docker installation on ubuntu server with AMD processor:
+
+su ubuntu
+docker --version
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+apt-cache policy docker-ce
+sudo apt install docker-ce
+sudo systemctl status docker
+
+To run docker commands without using sudo: 
+sudo usermod -aG docker $USER
+su root
+init 6 (to reboot the server)
+
+To install DOcker Compose:
+sudo curl -L "https://github.com/docker/compose/releases/download/1.28.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+
+Now to run Docker Compose we need a docker-compose.yml file that will be having the Volume Binded , beacuse if volume is not binded then if server restarts application will get started from scratch. And if volume is binded, then Upon running docker-compose up -d   app will pick the data from volume and the data will get restored 
+Docker-compose up -d
+docker-compose ps
+curl localhost:9004
+
+Docker-compose.yml File test:
+
+# docker-compose -f docker-compose-kong.yaml pull && docker-compose -f docker-compose-kong.yaml up -d
+# installing docker-compose sudo curl -L "https://github.com/docker/compose/releases/download/1.28.6/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
+#
+version: "3.3"
+services:
+ ng-edge-controller:
+   container_name: ng-edge-controller
+   restart: on-failure:5
+   image: appsentinels/ng-controller:latest
+   hostname: ng-controller-eretail-nonprod
+   environment:
+     - APPLICATION_DOMAIN=Eretail_Preprod
+     - ENVIRONMENT=preprod
+     - SAAS_SERVER_NAME=in-cloud.appsentinels.ai
+     - SAAS_API_KEY_VALUE=u8ZvPiy8UjK59xU7Q9QTaleJrNu858U9
+   ports:
+     - "9004:9004"
+     - "127.0.0.1:9101:9101"
+   logging:
+     driver: local
+     options:
+       max-size: 10m
+   deploy:
+     replicas: 1
+     restart_policy:
+       condition: on-failure
+     resources:
+       limits:
+         cpus: '15'
+         memory: 30720M
+   volumes:
+     - /var/crash/:/var/crash
+
+
+
+
+
+For amazon
+yum update -y
+            amazon-linux-extras install docker -y
+
+            systemctl start docker
+            systemctl enable docker
+
+
+sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+docker-compose version
+
+
+tcp-portrange-2900*3100
+I-09aa52f35c8d69dbd
+Run below command on main controller:
+/usr/local/appsentinels-onprem/utils/dp-commands.sh dp-debugstats
+
+
+
+AMAZON-Linux-86-64
+
+DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+mkdir -p $DOCKER_CONFIG/cli-plugins
+curl -SL https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
+chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+docker compose version
+
+Create a docker-compose.yml file
+Then run 
+docker compose up -d
+
+
+

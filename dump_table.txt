@@ -1,0 +1,29 @@
+(use -v for verbose to see all changes and run these commands in screen
+Screen
+Screen -ls
+ctrl+a+d)
+
+
+For dump with data:
+ mysqldump -h <hostname> --set-gtid-purged=OFF -u <user> -p db_name eav_entity_type > dump_eav_entity_type.sql
+Enter password
+
+For restore:
+mysql -h <hostname> -u root -p db_name < dump_eav_entity_type.sql
+Enter password
+
+
+For no data only schema:
+mysqldump -h <hostname> --set-gtid-purged=OFF -u <user> -p --no-data db_name tablename > dump_tablename.sql
+
+
+For restore without data only schema:
+mysql -h <hostname> -u root -p db_name < dump_tablename.sql
+
+
+
+If restore is not happening because of super privileges use below steps:
+Log in to RDS
+Go to the required database 
+Run command ; source /root/dump_db_name.sql where dump_db_name.sql iss dump file available on the same server
+

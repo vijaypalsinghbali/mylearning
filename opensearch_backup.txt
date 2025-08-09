@@ -1,0 +1,250 @@
+Opensearch backups:
+
+https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-snapshots.html
+
+https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-snapshot-restore.html
+
+—--
+
+STEPS FOR MANUAL BACKUPS:
+
+======
+Steps
+======
+
+Please refer the below documentation for detailed instructions and prerequisites for registering manual snapshot.
+[+] https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-snapshots.html    
+
+Step 1: Prerequisites
+-------------------------
+
+1.1: Create a S3 bucket
+
+To create a S3 bucket:
+
+* Go to the S3 console
+* Select 'Create bucket'
+* Choose a unique bucket name
+* Choose the same region as the region where your Opensearch domain resides
+* Select 'Create bucket'
+
+1.2: Create the required policies and roles to register a manual snapshot repository as mentioned below:
+
+1. Go to the IAM dashboard on your AWS console
+2. Select roles and click create a new role 
+3. For type of trusted entity choose "AWS Services"
+4. For "Choose the service that will use this role" select EC2
+5. Click the button "Next: Permissions"
+6. Click "Create Policy"
+7. Copy and paste the following in the JSON section replacing the areas with < > brackets [ note that the second section has the bucket ARN plus "/*"]
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:ListBucket"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "<ARN of your S3 bucket>"
+            ]
+        },
+        {
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "<ARN of your S3 bucket along with the trailing ‘/*‘>/*"
+            ]
+        }
+    ]
+}
+
+8. Click review
+9. For name enter: "<your-s3-policy-name>"
+10. Click "Create policy"
+11. Go back to the previous tab
+12. Click the refresh button
+13. Search for "<your-s3-policy-name-for-snapshot>"
+14. Select the "<your-s3-policy-name-for-snapshot>" policy 
+15. Click next, click next again
+16. For the role name enter: "<your-snapshot-role-name>"
+17. In the description change "EC2" to "ES" so it will read "Allows ES instances to call AWS services on your behalf."
+18. Click "Create Role"
+19. Search for the role, then click the name to edit the role further
+20. Go to the "Trust Relationships" tab
+21. Click "Edit trust relationship" 
+22. Copy and paste the following in the JSON section 
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": [
+                    "es.amazonaws.com",
+                    "ec2.amazonaws.com"
+                ]
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+
+23. Click "Update Trust Policy" 
+24. From the IAM console on the left, select the Users section (Alternatively you can use IAM roles instead of IAM users, skip below 3 steps and add ‘pass role’ policy to the IAM role)
+25. Click on your username
+26. Click "Add inline policy" or Create a new IAM Policy
+27. Click the "JSON" tab
+28. Copy and paste the following in the JSON section replacing the areas with < > brackets 
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "arn:aws:iam::<Your AWS account ID>:role/<your-snapshot-role-name>"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "es:ESHttpPut",
+            "Resource": [
+                "<ARN of your Opensearch cluster along with a trailing ‘/*’>/*"
+            ]
+        }
+    ]
+}
+
+29. Make sure to replace the Arn of your cluster along with trailing "/*"
+30. Click "Review policy"
+31. For the policy name enter "<you-snapshot-pass-role-policy>" (If you have created a IAM policy, this policy must be added to the Snapshot role)
+32. If your domain is enabled with FGAC access, please refer Step 1 from the below documentation for additional actions that are to be performed.
+[+] Registering a manual snapshot repository: https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-snapshots.html#managedomains-snapshot-registerdirectory 
+
+You should now have all the required policies and roles.
+
+Step 2 :- Registering a manual snapshot repository:
+----------------------------------------------------------------
+
+NOTE :- For this replication we used Amazon Linux2 machine and below commands are according to the same.
+
+2.1: Create a EC2 instance and attach 'IAM passrole' to the EC2 instance, which you will use in order to register the manual repository.
+
+NOTE:- If your Opensearch domain is in a VPC kindly create the instance in the same VPC.
+
+2.2: From the EC2 instance try connecting with the domain using SSH and run the following commands as prerequisite.
+
+→ $ sudo yum -y install python-pip
+→ $ sudo pip install boto3
+→ $ sudo pip install requests-aws4auth
+→ $ sudo aws configure (Please note this command have to be executed and add ‘access key’ and ‘secret access key’ have to be entered if IAM user is attached to the service)
+
+2.3: Create a snapshot repo in S3 using a python script.
+
+→ $ vim manual_snapshot.py
+
+Paste the below code in the file and change the required items as per the use case.
+host: Endpoint for your Amazon VPC-ES domain and a trailing /
+region: AWS region where you created the snapshot repository
+path: Name of the snapshot repository
+bucket: Name of the S3 bucket
+region: Region of the bucket where it is present( Check in the “Properties” tab inside the bucket)
+role_arn: ARN of the role which is created for manual snapshot (From Step 1.2)
+
+2.4: Code
+
+------------------------------------------------------------------------------------------------
+import boto3
+import requests
+from requests_aws4auth import AWS4Auth
+
+host = '<Domain-Endpoint>/' # Enter the ES domain endpoint (including https://) and trailing /
+region = '<Domain-Region>' # e.g. us-west-1
+service = 'es'
+credentials = boto3.Session().get_credentials()
+awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
+
+# Steps to Register snapshot repository
+path = '_snapshot/<Snapshot-Repo-Name>' # Provide the Repo name where the snapshots will to be stored
+url = host + path
+
+payload = {
+"type": "s3",
+"settings": {
+"bucket": "<Bucket-Name>",
+"region": "<Bucket-Region>",
+"role_arn": "<Role-created-for-manual-snapshots>"
+}
+}
+
+headers = {"Content-Type": "application/json"}
+
+r = requests.put(url, auth=awsauth, json=payload, headers=headers)
+
+print(r.status_code)
+print(r.text)
+------------------------------------------------------------------------------------------------
+
+Save the file and run it using the command:
+
+→ $ python manual_snapshot.py
+
+2.5: This is only a one time requirement to create a snapshot repo in an S3 bucket for Opensearch cluster. When you run this, you should get the output as following after making required changes to the host field:
+
+→ 200
+{"acknowledged":true}
+
+Step 3:- Create the snapshots:
+-------------------------------------
+
+3.1: To create a manual snapshot, first check if a snapshot process is currently happening because multiple snapshots cannot be taken at the same time. For that run the following request:
+
+CURL API:
+→ $ curl -XGET 'https://<ES domain endpoint>/_snapshot/_status‘
+
+KIBANA API:
+→ GET _snapshot/_status
+
+3.2: Once all the previous steps are completed, we can create snapshot using the command:
+
+CURL API:
+→ $ curl -XPUT '<ES domain endpoint>/_snapshot/<your-snapshot-rep-name>/<snapshot-name>'
+
+KIBANA API:
+→ PUT /_snapshot/<your-snapshot-rep-name>/<snapshot-name>
+
+You should see the output
+
+{
+"accepted":true
+}
+
+3.3: To view the snapshots :
+
+CURL API:
+→ $ curl -XGET '<ES domain endpoint>/_snapshot/<your-snapshot-rep-name>/_all?pretty'
+
+KIBANA API:
+→ GET /_snapshot/<your-snapshot-rep-name>/_all?pretty
+
+3.4: To restore the snapshot :
+
+CURL API:
+→ $ curl -XPOST 'domain-endpoint/_snapshot/repository-name/snapshot-name/_restore'
+
+KIBANA API:
+→ POST /_snapshot/repository-name/snapshot-name/_restore
+
+For more information, please refer the documentation.
+[+] https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-snapshots.html#managedomains-snapshot-restore 
+
+
+
+

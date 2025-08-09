@@ -1,0 +1,30 @@
+mysqldump -h <hostname -u username -p <password> <table_name>  > dump_file.sql
+
+
+mysql -h <host> -u user -p pass < <newtable>.sql
+
+
+mysqldump -h <hostname> --set-gtid-purged=OFF -u <username> -p --no-data <databasename> <tablename> > <filename>.sql
+
+
+
+
+mysqldump -h <hostname> --set-gtid-purged=OFF -u username -p --no-data database <tablename> > <filename>.sql
+
+
+mysql -h <hostname> -u <username> -p database < <new_table_name>.sql
+-----
+
+
+pgsql: 
+
+
+CONNECT : 
+mongo -u username -p pass  --authenticationDatabase admin
+Creds taken from Secret manager
+
+DUMP:
+mongodump -u username -p <paswword>  --db=<dbname> --collection=<collection_name> --out=newdumpfile_backup --authenticationDatabase admin
+RESTORE: 
+mongorestore -u <usernmae> -p passs --db=dbname --collection=<collectionname> ./newdumpfile_backup/database/table --authenticationDatabase admin
+

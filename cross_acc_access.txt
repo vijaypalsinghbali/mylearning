@@ -1,0 +1,54 @@
+COMMANDS FROM AWSCLI TO GO CROSS ACCOUNT TO ACCESS THE RESOURCES
+
+apt-get install awscli
+aws sts get-caller-identity (shows what account you are currently accessing and which resoucres)
+
+assume_role_output=$(aws sts assume-role --role-arn arm --role-session-name my-session)
+
+aws sts assume-role --role-arn cross-account-access/nf-footlocker-user-role --role-session-name test
+
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_SESSION_TOKEN
+
+aws dynamodb describe-table --table-name YOUR_TABLE_NAME
+aws s3 ls
+aws sts get-caller-identity
+aws dynamodb describe-table --table-name nyk-address
+
+
+aws secretsmanager get-secret-value \
+   --secret-id MyTestSecret
+
+
+
+
+https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_SeeAlso
+https://docs.aws.amazon.com/cli/latest/reference/sts/assume-role.html
+
+
+aws sts assume-role --role-arn <> --role-session-name <name>
+
+https://docs.aws.amazon.com/cli/latest/reference/sts/assume-role.html
+
+
+https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html
+
+
+https://docs.aws.amazon.com/cli/latest/reference/sts/assume-role.html
+
+
+$ export AWS_ACCESS_KEY_ID=
+$ export AWS_SECRET_ACCESS_KEY=
+$ export AWS_SESSION_TOKEN=
+aws sts assume-role --role-arn <> --role-session-name <name>
+arn:aws:dynamodb:ap-south-1:332463837037:table/nyk_address
+
+
+https://docs.aws.amazon.com/cli/latest/reference/secretsmanager/get-secret-value.html
+
+
+
+
+Check also — IMDVS2
+

@@ -1,0 +1,37 @@
+Elasticsearch disk issue >  in dev tools run below commands:
+When disk is high for elasticsearch server , and and is 90% , ES automatical turns 
+index.blocks.read_only_allow_delete": true for all indexes to avoid further disk usage , 
+Clean the disk from Index management by deleting old indexes 200GB or more etc. 
+Then
+We need to run 
+PUT /_all/_settings
+{
+  "settings": {
+    "index.blocks.read_only_allow_delete": null
+  }
+}
+Now files could be written , because logs are blocked at ES , the buffer gets chocked on forwarders, so we need to restart td-agent to drop all the buffers
+
+Check everything in monitoring  - in overview
+
+IMP commands:
+
+GET /_cluster/health?pretty
+
+GET /_settings?pretty
+
+PUT /seller-ib-int-2025.02.15/_settings
+{
+  "settings": {
+    "index.blocks.read_only_allow_delete": null
+  }
+}
+
+
+PUT /_all/_settings
+{
+  "settings": {
+    "index.blocks.read_only_allow_delete": null
+  }
+}
+

@@ -1,0 +1,35 @@
+To increase the attached volume
+
+sudo growpart /dev/nvme0n1 1
+sudo resize2fs /dev/nvme0n1p1
+
+
+—-
+
+sudo growpart /dev/nvme0n1 1
+sudo xfs_growfs /dev/nvme0n1p1
+ ------------------
+
+
+
+Volume attach to ec2 instance and command to run 
+Command to run on server
+ 
+grow command 
+then resize command
+
+sudo growpart /dev/xvda1 1
+
+ XFS file system = sudo xfs_growfs -d /tmp/sql-backup
+                              sudo xfs_growfs -d / (for / folder)
+
+Ext4 file system =sudo resize2fs /dev/nvme0n1p1
+
+
+
+OR 
+
+
+Use below method:  
+https://medium.com/@mudasirhaji/step-by-step-process-of-how-to-add-and-mount-ebs-volume-on-ubuntu-ec2-linux-instance-a4be8870a4dd
+
