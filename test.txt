@@ -1,5 +1,6 @@
 echo "# mylearning" >> README.md
 git init
+testing
 git add README.md
 git commit -m "first commit"
 git branch -M main
